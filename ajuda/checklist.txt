@@ -1,0 +1,81 @@
+Minha checklist: 
+
+1. AFD (primeiro passo)
+
+    [X] Liste todos os tokens da linguagem (palavras reservadas, identificadores, números, operadores, símbolos).
+
+    [X] Desenhe o AFD em Graphviz (ou JFLAP).
+
+        Estados iniciais e finais.
+
+        Transições para identificadores, números, operadores e símbolos.
+
+        Estado de erro para caracteres inválidos.
+
+    [X] Gere a imagem do diagrama (dot -Tpng afd.dot -o afd.png).
+
+    [X] Inclua o diagrama no relatório.
+
+2. Estruturas em C
+
+    [ ] Crie struct Token com nome, lexema, linha e coluna.
+
+    [ ] Crie a Tabela de Símbolos (array ou lista).
+
+        Inicialize com palavras reservadas.
+
+        Insira identificadores conforme aparecem.
+
+        Normalize para minúsculo (case-insensitive).
+
+3. Implementação do Analisador Léxico
+
+    [ ] Abra o arquivo fonte .pas com fopen().
+
+    [ ] Leia caractere por caractere com fgetc().
+
+    [ ] Controle linha e coluna.
+
+    [ ] Função proximoToken() que retorna o próximo token.
+
+    [ ] Ignore espaços, tabulações, quebras de linha e comentários { ... }.
+
+    [ ] Reconheça tokens básicos:
+
+        Identificadores e palavras reservadas.
+
+        Números inteiros e reais.
+
+        Operadores e símbolos.
+
+4. Tratamento de Erros
+
+    [ ] Detecte caracteres inválidos (@, %, $).
+
+    [ ] Detecte comentário não fechado.
+
+    [ ] Detecte string não fechada (se aplicável).
+
+    [ ] Registre no arquivo .err → tipo do erro, linha e coluna.
+
+5. Saída do Analisador
+
+    [ ] Gere arquivo .lex com tokens reconhecidos.
+
+    [ ] Gere arquivo .ts com tabela de símbolos final.
+
+    [ ] Gere arquivo .err com erros léxicos.
+
+6. Relatório Técnico
+
+    [ ] Descrição das estruturas de dados.
+
+    [ ] Descrição das funções implementadas.
+
+    [ ] Explicação do AFD (com diagrama).
+
+    [ ] Testes realizados (mínimo 3 corretos e 3 com erro).
+
+    [ ] Saídas geradas pelo analisador.
+
+    [ ] Conteúdo final da tabela de símbolos.

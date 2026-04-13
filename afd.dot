@@ -1,0 +1,100 @@
+// comentei alguns estados e transições para simplificar o AFD
+
+digraph AFD {
+    rankdir=LR;
+    node [shape=circle];
+
+    // Identificadores e palavras reservadas
+    START;
+    ID [shape=doublecircle];
+    NUM_INT [shape=doublecircle];
+    NUM_REAL [shape=doublecircle];
+    KW_PROGRAM [shape=doublecircle];
+    KW_VAR [shape=doublecircle];
+    // KW_INTEGER [shape=doublecircle];
+    // KW_REAL [shape=doublecircle];
+    KW_BEGIN [shape=doublecircle];
+    // KW_END [shape=doublecircle];
+    // KW_IF [shape=doublecircle];
+    // KW_THEN [shape=doublecircle];
+    // KW_ELSE [shape=doublecircle];
+    // KW_WHILE [shape=doublecircle];
+    // KW_DO [shape=doublecircle];
+    // símbolos
+    SMB_SEM [shape=doublecircle];
+    SMB_COM [shape=doublecircle];
+    SMB_OPA [shape=doublecircle];
+    // SMB_CPA [shape=doublecircle];
+    SMB_COL [shape=doublecircle];
+    // SMB_DOT [shape=doublecircle];
+    // SMB_OBC [shape=doublecircle];
+    // SMB_CBC [shape=doublecircle];
+
+    // // Operadores
+    OP_EQ [shape=doublecircle];
+    OP_NE [shape=doublecircle];
+    OP_LT [shape=doublecircle];
+    OP_LE [shape=doublecircle];
+    OP_GT [shape=doublecircle];
+    OP_GE [shape=doublecircle];
+    // OP_AD [shape=doublecircle];
+    // OP_MIN [shape=doublecircle];
+    // OP_MUL [shape=doublecircle];
+    // OP_DIV [shape=doublecircle];
+    OP_ASS [shape=doublecircle];
+
+
+    // erros
+    ERROR [shape=doublecircle, color=red];
+
+    // Identificadores e palavras reservadas
+    START -> ID [label="letra"];
+    ID -> ID [label="letra/dígito"];
+    ID -> KW_PROGRAM [label="program"]; // se lexema for 'program'
+    ID -> KW_VAR [label="var"];         // se lexema for 'var'
+    ID -> KW_BEGIN [label="begin"];     // se lexema for 'begin'
+    // ID -> KW_END [label="end"];         // se lexema for 'end'
+    // ID -> KW_IF [label="if"];           // se lexema for 'if'
+    // ID -> KW_THEN [label="then"];       // se lexema for 'then'
+    // ID -> KW_ELSE [label="else"];       // se lexema for 'else'
+    // ID -> KW_WHILE [label="while"];     // se lexema for 'while'
+    // ID -> KW_DO [label="do"];           // se lexema for 'do'
+    // ID -> KW_REAL [label="real"];       // se lexema for 'real'
+    // ID -> KW_INTEGER [label="integer"]; // se lexema for 'integer'
+    ID -> START [label="delimitador"];
+
+    // Números
+    START -> NUM_INT [label="dígito"];
+    NUM_INT -> NUM_INT [label="dígito"];
+    NUM_INT -> NUM_REAL [label="."];
+    NUM_REAL -> NUM_REAL [label="dígito"];
+
+    // operadores
+    START -> OP_EQ [label="="];
+    START -> OP_NE [label="<>"];
+    // START -> OP_AD [label="+"];
+    // START -> OP_MIN [label="-"];
+    // START -> OP_MUL [label="*"];
+    // START -> OP_DIV [label="/"];
+    START -> OP_LT [label="<"];
+    OP_LT -> OP_LE [label="="];   // <=
+    OP_LT -> OP_NE [label=">"];  // <>
+    START -> OP_GT [label=">"];
+    OP_GT -> OP_GE [label="="];   // >=
+    START -> SMB_COL [label=":"];
+    SMB_COL -> OP_ASS [label="="]; // :=
+
+
+    // Símbolos
+    START -> SMB_SEM [label=";"];
+    START -> SMB_COM [label=","];
+    START -> SMB_OPA [label="("];
+    // START -> SMB_CPA [label=")"];
+    // START -> SMB_COL [label=":"];
+    // START -> SMB_DOT [label="."];
+    // START -> SMB_OBC [label="{"];
+    // START -> SMB_CBC [label="}"];
+
+    // Erros
+    START -> ERROR [label="caractere inválido"];
+}
