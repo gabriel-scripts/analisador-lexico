@@ -1,31 +1,34 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-    char c;
-    int line = 1, word = 0, character = 0;
+    FILE *fp;
+    int c; 
 
-    printf("Digite um texto (pressione Ctrl+D para finalizar):\n");
+    fp = fopen("codigo.pas", "r");
+    if (fp == NULL) {
+        perror("Erro ao abrir arquivo");
+        return 1;
+    }
 
-    while ((c = getchar()) != EOF) {
-        character++;
+    while ((c = fgetc(fp)) != EOF) {
 
-        if (c == '\n') {
-            line++;
-            word = 0; // Reset word count for new line
-        } else if (c == ' ' || c == '\t') {
-            if (word > 0) {
-                word = 0; // Reset word count for new word
-            }
+        printf("Caractere lido: %c\n", c);
+
+        // exemplo: verificar se é letra, dígito ou delimitador
+        if (c >= 'a' && c <= 'z') {
+            printf("É uma letra minúscula\n");
+        } else if (c >= 'A' && c <= 'Z') {
+            printf("É uma letra maiúscula\n");
+        } else if (c >= '0' && c <= '9') {
+            printf("É um dígito\n");
+        } else if (c == ' ' || c == '\n' || c == '\t') {
+            printf("É um delimitador\n");
         } else {
-            if (word == 0) {
-                word++; // Start counting a new word
-            }
+            printf("Outro símbolo\n");
         }
     }
 
-    printf("Linhas: %d\n", line);
-    printf("Palavras: %d\n", word);
-    printf("Caracteres: %d\n", character);
-
+    fclose(fp);
     return 0;
 }
