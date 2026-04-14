@@ -30,17 +30,17 @@ Minha checklist:
 
 3. Implementação do Analisador Léxico
 
-    [ ] Abra o arquivo fonte .pas com fopen().
+    [X] Abra o arquivo fonte .pas com fopen().
 
-    [ ] Leia caractere por caractere com fgetc().
+    [X] Leia caractere por caractere com fgetc().
 
-    [ ] Controle linha e coluna.
+    [X] Controle linha e coluna.
 
-    [ ] Função proximoToken() que retorna o próximo token.
+    [X] Função proximoToken() que retorna o próximo token.
 
-    [ ] Ignore espaços, tabulações, quebras de linha e comentários { ... }.
+    [X] Ignore espaços, tabulações, quebras de linha e comentários { ... }.
 
-    [ ] Reconheça tokens básicos:
+    [X] Reconheça tokens básicos:
 
         Identificadores e palavras reservadas.
 
@@ -50,21 +50,21 @@ Minha checklist:
 
 4. Tratamento de Erros
 
-    [ ] Detecte caracteres inválidos (@, %, $).
+    [X] Detecte caracteres inválidos (@, %, $).
 
-    [ ] Detecte comentário não fechado.
+    [X] Detecte comentário não fechado.
 
-    [ ] Detecte string não fechada (se aplicável).
+    [X] Detecte string não fechada (se aplicável).
 
-    [ ] Registre no arquivo .err → tipo do erro, linha e coluna.
+    [X] Registre no arquivo .err → tipo do erro, linha e coluna.
 
 5. Saída do Analisador
 
-    [ ] Gere arquivo .lex com tokens reconhecidos.
+    [X] Gere arquivo .lex com tokens reconhecidos.
 
-    [ ] Gere arquivo .ts com tabela de símbolos final.
+    [X] Gere arquivo .ts com tabela de símbolos final.
 
-    [ ] Gere arquivo .err com erros léxicos.
+    [X] Gere arquivo .err com erros léxicos.
 
 6. Relatório Técnico
 

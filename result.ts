@@ -13,3 +13,5 @@ testelexico	identificador
 x	identificador
 y	identificador
 z	identificador
+beg	identificador
+in	identificador
