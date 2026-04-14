@@ -1,0 +1,15 @@
+program	palavra-reservada
+var	palavra-reservada
+integer	palavra-reservada
+real	palavra-reservada
+begin	palavra-reservada
+end	palavra-reservada
+if	palavra-reservada
+then	palavra-reservada
+else	palavra-reservada
+while	palavra-reservada
+do	palavra-reservada
+testelexico	identificador
+x	identificador
+y	identificador
+z	identificador
