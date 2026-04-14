@@ -18,9 +18,9 @@ Minha checklist:
 
 2. Estruturas em C
 
-    [ ] Crie struct Token com nome, lexema, linha e coluna.
+    [X] Crie struct Token com nome, lexema, linha e coluna.
 
-    [ ] Crie a Tabela de Símbolos (array ou lista).
+    [X] Crie a Tabela de Símbolos (array ou lista).
 
         Inicialize com palavras reservadas.
 
