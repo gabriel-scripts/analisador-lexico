@@ -2,7 +2,7 @@ program testeLexico;
 var
 	x, y: integer;
 	z: real;
-beg in
+begin
 	x := 10;
 	y := 20;
 	z := 3.14;
