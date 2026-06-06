@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
-#define MAX_LEXEMA 100
-#define MAX_TS 1000
+#include <stdlib.h>
+#include "analisador.h"
+#include "sintatico.h"
 
 // Palavras reservadas
 int qtd_kw_program = 0;
@@ -50,21 +50,12 @@ int qtd_op_div = 0;    // /
 
 int qtd_erro = 0;
 
-typedef struct Token {
-    char nome[20];
-    char tipo[20];
-    char valor[50];
-    int linha;
-    int coluna;
-} Token;
-
-typedef struct Simbolo {
-    char lexema[50];
-    char tipo[20];
-} Simbolo;
-
 Simbolo tabela_ts[MAX_TS];
 int qtd_ts = 0;
+
+// Variaveis de controle de posicao
+int linha = 1;
+int coluna = 1;
 
 void toLower(char *dst, const char *src, int max) {
     int i = 0;
@@ -202,24 +193,9 @@ Token createWordOrNumberToken(const char *lexemaOriginal, int linha, int coluna)
     return createSimpleToken("ID", "identificador", lexema, linha, coluna);
 }
 
-void lexicalAnalisis(FILE *fp) {
+Token proximoToken(FILE *fp) {
     int c;
-    int linha = 1;
-    int coluna = 1;
     char lexema[MAX_LEXEMA];
-    FILE *fpLex = fopen("result.lex", "w");
-    FILE *fpErr = fopen("result.err", "w");
-    FILE *fpTs = fopen("result.ts", "w");
-
-    if (fpLex == NULL || fpErr == NULL || fpTs == NULL) {
-        perror("Erro ao abrir arquivos de saida");
-        if (fpLex != NULL) fclose(fpLex);
-        if (fpErr != NULL) fclose(fpErr);
-        if (fpTs != NULL) fclose(fpTs);
-        return;
-    }
-
-    initTS();
 
     while ((c = fgetc(fp)) != EOF) {
         int tokenLinha = linha;
@@ -253,8 +229,7 @@ void lexicalAnalisis(FILE *fp) {
             }
             if (!fechado) {
                 qtd_erro++;
-                writeErr(fpErr, "ERRO_COMENTARIO_NAO_FECHADO", "{", tokenLinha, tokenColuna);
-                break;
+                return createSimpleToken("ERROR", "ERRO_COMENTARIO_NAO_FECHADO", "{", tokenLinha, tokenColuna);
             }
             continue;
         }
@@ -270,16 +245,15 @@ void lexicalAnalisis(FILE *fp) {
                 }
                 if (c == '\n') {
                     qtd_erro++;
-                    writeErr(fpErr, "ERRO_STRING_NAO_FECHADA", "'", tokenLinha, tokenColuna);
                     linha++;
                     coluna = 1;
-                    break;
+                    return createSimpleToken("ERROR", "ERRO_STRING_NAO_FECHADA", "'", tokenLinha, tokenColuna);
                 }
                 coluna++;
             }
             if (c == EOF && !fechado) {
                 qtd_erro++;
-                writeErr(fpErr, "ERRO_STRING_NAO_FECHADA", "'", tokenLinha, tokenColuna);
+                return createSimpleToken("ERROR", "ERRO_STRING_NAO_FECHADA", "'", tokenLinha, tokenColuna);
             }
             continue;
         }
@@ -297,8 +271,7 @@ void lexicalAnalisis(FILE *fp) {
             if (c != EOF) {
                 ungetc(c, fp);
             }
-            writeLex(fpLex, createWordOrNumberToken(lexema, tokenLinha, tokenColuna));
-            continue;
+            return createWordOrNumberToken(lexema, tokenLinha, tokenColuna);
         }
 
         if (isdigit(c)) {
@@ -333,141 +306,146 @@ void lexicalAnalisis(FILE *fp) {
             if (c != EOF) {
                 ungetc(c, fp);
             }
-            writeLex(fpLex, createWordOrNumberToken(lexema, tokenLinha, tokenColuna));
-            continue;
+            return createWordOrNumberToken(lexema, tokenLinha, tokenColuna);
         }
 
         if (c == ';') {
             qtd_smb_sem++;
-            writeLex(fpLex, createSimpleToken("SMB_SEM", "simbolo", ";", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("SMB_SEM", "simbolo", ";", tokenLinha, tokenColuna);
         }
         if (c == ',') {
             qtd_smb_com++;
-            writeLex(fpLex, createSimpleToken("SMB_COM", "simbolo", ",", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("SMB_COM", "simbolo", ",", tokenLinha, tokenColuna);
         }
         if (c == '(') {
             qtd_smb_opa++;
-            writeLex(fpLex, createSimpleToken("SMB_OPA", "simbolo", "(", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("SMB_OPA", "simbolo", "(", tokenLinha, tokenColuna);
         }
         if (c == ')') {
             qtd_smb_cpa++;
-            writeLex(fpLex, createSimpleToken("SMB_CPA", "simbolo", ")", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("SMB_CPA", "simbolo", ")", tokenLinha, tokenColuna);
         }
         if (c == '.') {
             qtd_smb_dot++;
-            writeLex(fpLex, createSimpleToken("SMB_DOT", "simbolo", ".", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("SMB_DOT", "simbolo", ".", tokenLinha, tokenColuna);
         }
         if (c == '+') {
             qtd_op_ad++;
-            writeLex(fpLex, createSimpleToken("OP_AD", "operador", "+", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("OP_AD", "operador", "+", tokenLinha, tokenColuna);
         }
         if (c == '-') {
             qtd_op_min++;
-            writeLex(fpLex, createSimpleToken("OP_MIN", "operador", "-", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("OP_MIN", "operador", "-", tokenLinha, tokenColuna);
         }
         if (c == '*') {
             qtd_op_mul++;
-            writeLex(fpLex, createSimpleToken("OP_MUL", "operador", "*", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("OP_MUL", "operador", "*", tokenLinha, tokenColuna);
         }
         if (c == '/') {
             qtd_op_div++;
-            writeLex(fpLex, createSimpleToken("OP_DIV", "operador", "/", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("OP_DIV", "operador", "/", tokenLinha, tokenColuna);
         }
         if (c == '=') {
             qtd_op_eq++;
-            writeLex(fpLex, createSimpleToken("OP_EQ", "operador", "=", tokenLinha, tokenColuna));
             coluna++;
-            continue;
+            return createSimpleToken("OP_EQ", "operador", "=", tokenLinha, tokenColuna);
         }
 
         if (c == ':') {
             int prox = fgetc(fp);
             if (prox == '=') {
                 qtd_op_ass++;
-                writeLex(fpLex, createSimpleToken("OP_ASS", "operador", ":=", tokenLinha, tokenColuna));
                 coluna += 2;
+                return createSimpleToken("OP_ASS", "operador", ":=", tokenLinha, tokenColuna);
             } else {
                 if (prox != EOF) {
                     ungetc(prox, fp);
                 }
                 qtd_smb_col++;
-                writeLex(fpLex, createSimpleToken("SMB_COL", "simbolo", ":", tokenLinha, tokenColuna));
                 coluna++;
+                return createSimpleToken("SMB_COL", "simbolo", ":", tokenLinha, tokenColuna);
             }
-            continue;
         }
 
         if (c == '<') {
             int prox = fgetc(fp);
             if (prox == '=') {
                 qtd_op_le++;
-                writeLex(fpLex, createSimpleToken("OP_LE", "operador", "<=", tokenLinha, tokenColuna));
                 coluna += 2;
+                return createSimpleToken("OP_LE", "operador", "<=", tokenLinha, tokenColuna);
             } else if (prox == '>') {
                 qtd_op_ne++;
-                writeLex(fpLex, createSimpleToken("OP_NE", "operador", "<>", tokenLinha, tokenColuna));
                 coluna += 2;
+                return createSimpleToken("OP_NE", "operador", "<>", tokenLinha, tokenColuna);
             } else {
                 if (prox != EOF) {
                     ungetc(prox, fp);
                 }
                 qtd_op_lt++;
-                writeLex(fpLex, createSimpleToken("OP_LT", "operador", "<", tokenLinha, tokenColuna));
                 coluna++;
+                return createSimpleToken("OP_LT", "operador", "<", tokenLinha, tokenColuna);
             }
-            continue;
         }
 
         if (c == '>') {
             int prox = fgetc(fp);
             if (prox == '=') {
                 qtd_op_ge++;
-                writeLex(fpLex, createSimpleToken("OP_GE", "operador", ">=", tokenLinha, tokenColuna));
                 coluna += 2;
+                return createSimpleToken("OP_GE", "operador", ">=", tokenLinha, tokenColuna);
             } else {
                 if (prox != EOF) {
                     ungetc(prox, fp);
                 }
                 qtd_op_gt++;
-                writeLex(fpLex, createSimpleToken("OP_GT", "operador", ">", tokenLinha, tokenColuna));
                 coluna++;
+                return createSimpleToken("OP_GT", "operador", ">", tokenLinha, tokenColuna);
             }
-            continue;
         }
 
         qtd_erro++;
-        {
-            char invalido[2];
-            invalido[0] = (char)c;
-            invalido[1] = '\0';
-            writeErr(fpErr, "ERRO_CARACTERE_INVALIDO", invalido, tokenLinha, tokenColuna);
-        }
+        char invalido[2];
+        invalido[0] = (char)c;
+        invalido[1] = '\0';
         coluna++;
+        return createSimpleToken("ERROR", "ERRO_CARACTERE_INVALIDO", invalido, tokenLinha, tokenColuna);
     }
 
-    writeTS(fpTs);
+    return createSimpleToken("EOF", "fim_de_arquivo", "EOF", linha, coluna);
+}
 
-    fclose(fpLex);
-    fclose(fpErr);
-    fclose(fpTs);
+void tv_free(TokenVec *v) {
+    if (v->data) free(v->data);
+    v->data = NULL;
+    v->size = 0;
+    v->cap = 0;
+}
+
+TokenVec tokenize_all(FILE *fp) {
+    TokenVec v = {NULL, 0, 0};
+    v.cap = 128;
+    v.data = (Token*)malloc(v.cap * sizeof(Token));
+
+    Token t;
+    do {
+        t = proximoToken(fp);
+        if (v.size >= v.cap) {
+            v.cap *= 2;
+            v.data = (Token*)realloc(v.data, v.cap * sizeof(Token));
+        }
+        v.data[v.size++] = t;
+    } while (strcmp(t.nome, "EOF") != 0);
+
+    return v;
 }
 
 int main(void) {
@@ -482,8 +460,41 @@ int main(void) {
         return 1;
     }
 
-    lexicalAnalisis(fp);
+    FILE *fpLex = fopen("result.lex", "w");
+    FILE *fpErr = fopen("result.err", "w");
+    FILE *fpTs = fopen("result.ts", "w");
 
+    if (fpLex == NULL || fpErr == NULL || fpTs == NULL) {
+        perror("Erro ao abrir arquivos de saida");
+        if (fpLex != NULL) fclose(fpLex);
+        if (fpErr != NULL) fclose(fpErr);
+        if (fpTs != NULL) fclose(fpTs);
+        return 1;
+    }
+
+    initTS();
+
+    TokenVec v = tokenize_all(fp);
+
+    for (int i = 0; i < v.size; i++) {
+        Token t = v.data[i];
+        if (strcmp(t.nome, "ERROR") == 0) {
+            writeErr(fpErr, t.tipo, t.valor, t.linha, t.coluna);
+        } else if (strcmp(t.nome, "EOF") != 0) {
+            writeLex(fpLex, t);
+        }
+    }
+
+    // CHAMADA DO SINTÁTICO:
+    parse(&v);
+
+    tv_free(&v);
+
+    writeTS(fpTs);
+
+    fclose(fpLex);
+    fclose(fpErr);
+    fclose(fpTs);
     fclose(fp);
 
     printf("Analise lexica finalizada.\n");
