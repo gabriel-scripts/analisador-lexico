@@ -79,3 +79,26 @@ Minha checklist:
     [ ] Saídas geradas pelo analisador.
 
     [ ] Conteúdo final da tabela de símbolos.
+
+7. Analisador Sintático (Implementado)
+
+    [X] <programa>
+    [X] <bloco>
+    [X] <parte de declarações de variáveis>
+    [X] <declaração de variáveis>
+    [X] <lista de identificadores>
+    [X] <tipo>
+    [ ] <comando composto> (Nota: `parse_compound_command` está parcialmente implementado, mas precisa de revisão na condição do loop e remoção da recursão indevida)
+
+8. Próximos Passos - Analisador Sintático (Para Implementar)
+
+    [ ] Implementar `<comando>` (`parse_command` está vazio)
+    [ ] Implementar `<atribuição>` (`parse_atribution` está vazio)
+    [ ] Implementar `<comando condicional>` (`parse_conditional_command` está vazio)
+    [ ] Implementar `<comando repetitivo>` (`parse_repetitive_command` está vazio)
+    [ ] Criar e implementar função para `<expressão>`
+    [ ] Criar e implementar função para `<relação>`
+    [ ] Criar e implementar função para `<expressão simples>`
+    [ ] Criar e implementar função para `<termo>`
+    [ ] Criar e implementar função para `<fator>`
+    [ ] Criar e implementar função para `<variável>`
