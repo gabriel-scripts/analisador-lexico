@@ -92,7 +92,7 @@ Minha checklist:
 
 8. Próximos Passos - Analisador Sintático (Para Implementar)
 
-    [ ] Implementar `<comando>` (`parse_command` está vazio)
+    [X] Implementar `<comando>` (roteamento feito usando `peek()`)
     [ ] Implementar `<atribuição>` (`parse_atribution` está vazio)
     [ ] Implementar `<comando condicional>` (`parse_conditional_command` está vazio)
     [ ] Implementar `<comando repetitivo>` (`parse_repetitive_command` está vazio)
