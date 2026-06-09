@@ -448,6 +448,55 @@ TokenVec tokenize_all(FILE *fp) {
     return v;
 }
 
+void casaToken(const char *nomeEsperado, TokenVec *tokens, int *posicao, Token **tokenAtual) {
+    if (strcmp((*tokenAtual)->nome, nomeEsperado) == 0) {
+        (*posicao)++;
+        (*tokenAtual) = &tokens->data[(*posicao)];
+    } else {
+        fprintf(stderr, "Erro sintático: esperado <%s> mas encontrado <%s> na linha %d, coluna %d\n",
+                nomeEsperado, (*tokenAtual)->nome, (*tokenAtual)->linha, (*tokenAtual)->coluna);
+        exit(1);
+    }
+}
+
+void block(int *posicao, TokenVec *tokens, Token **tokenAtual) {
+    caseToken("KW_VAR", tokens, posicao, tokenAtual);
+    casaToken("ID", tokens, posicao, tokenAtual);
+    if(caseToken("SMB_COL", tokens, posicao, tokenAtual)) {
+        casaToken("KW_INTEGER", tokens, posicao, tokenAtual);
+        casaToken("SMB_SEM", tokens, posicao, tokenAtual);
+    } else if (caseToken("SMB_COL", tokens, posicao, tokenAtual)) {
+        casaToken("KW_REAL", tokens, posicao, tokenAtual);
+        casaToken("SMB_SEM", tokens, posicao, tokenAtual);
+    }else if(caseToken("SMB_COM", tokens, posicao, tokenAtual)){
+        casaToken("ID", tokens, posicao, tokenAtual);
+        casaToken("SMB_COL", tokens, posicao, tokenAtual);
+        casaToken("KW_INTEGER", tokens, posicao, tokenAtual);
+        casaToken("SMB_SEM", tokens, posicao, tokenAtual);
+    }
+}
+
+void program(int *posicao, TokenVec *tokens, Token **tokenAtual) {
+    casaToken("KW_PROGRAM", tokens, posicao, tokenAtual);
+    casaToken("ID", tokens, posicao, tokenAtual);
+    casaToken("SMB_SEM", tokens, posicao, tokenAtual);
+    block(posicao, tokens, tokenAtual);
+    casaToken("SMB_DOT", tokens, posicao, tokenAtual);
+    block(posicao, tokens, tokenAtual);
+}
+
+void parseTokens(TokenVec *v) {
+    TokenVec *tokens = v;
+
+    int *posicao = 0;
+
+    Token *tokenAtual = &tokens->data[0];
+
+    program(posicao, tokens, tokenAtual);
+
+    casaToken("EOF", tokens, posicao, &tokenAtual);
+}
+
 int main(void) {
     FILE *fp;
 
@@ -486,7 +535,7 @@ int main(void) {
     }
 
     // CHAMADA DO SINTÁTICO:
-    parse(&v);
+    parseTokens(&v);
 
     tv_free(&v);
 
