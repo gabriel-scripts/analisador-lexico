@@ -90,15 +90,15 @@ Minha checklist:
     [X] <tipo>
     [ ] <comando composto> (Nota: `parse_compound_command` está parcialmente implementado, mas precisa de revisão na condição do loop e remoção da recursão indevida)
 
-8. Próximos Passos - Analisador Sintático (Para Implementar)
+8. Próximos Passos - Analisador Sintático (Concluídos)
 
     [X] Implementar `<comando>` (roteamento feito usando `peek()`)
-    [ ] Implementar `<atribuição>` (`parse_atribution` está vazio)
-    [ ] Implementar `<comando condicional>` (`parse_conditional_command` está vazio)
-    [ ] Implementar `<comando repetitivo>` (`parse_repetitive_command` está vazio)
-    [ ] Criar e implementar função para `<expressão>`
-    [ ] Criar e implementar função para `<relação>`
-    [ ] Criar e implementar função para `<expressão simples>`
-    [ ] Criar e implementar função para `<termo>`
-    [ ] Criar e implementar função para `<fator>`
-    [ ] Criar e implementar função para `<variável>`
+    [X] Implementar `<atribuição>`
+    [X] Implementar `<comando condicional>`
+    [X] Implementar `<comando repetitivo>`
+    [X] Criar e implementar função para `<expressão>`
+    [X] Criar e implementar função para `<relação>`
+    [X] Criar e implementar função para `<expressão simples>`
+    [X] Criar e implementar função para `<termo>`
+    [X] Criar e implementar função para `<fator>`
+    [X] Criar e implementar função para `<variável>` (Embutida em fator/atribuição)
