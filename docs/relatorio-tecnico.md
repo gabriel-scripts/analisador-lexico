@@ -79,11 +79,11 @@ O analisador sintático implementa um **Analisador Recursivo Descendente Prediti
 |-----------------------------------|---------------------------------------------------------------------------------------------------------------------|
 | `cur(Parser *p)`                  | Retorna o token corrente sem avançar o índice                                                                       |
 | `peek(Parser *p, char *nome)`     | Verifica se o token corrente é do tipo `nome`, **sem avançar**. Retorna 1 (verdadeiro) ou 0 (falso)                |
-| `match(Parser *p, char *nome)`    | **CasaToken:** Se o token corrente for do tipo `nome`, avança o índice e retorna 1. Caso contrário, retorna 0       |
-| `expect(Parser *p, char *nome, char *msg)` | Chama `match`. Se falhar, dispara `perr` e encerra a análise                                           |
+| `CasaToken(Parser *p, char *nome)`| **CasaToken:** Se o token corrente for do tipo `nome`, avança o índice e retorna 1. Caso contrário, retorna 0       |
+| `expect(Parser *p, char *nome, char *msg)` | Chama `CasaToken`. Se falhar, dispara `perr` e encerra a análise                                      |
 | `perr(Parser *p, char *msg)`      | Emite a mensagem de erro no formato exigido e encerra o processo com `exit(1)`                                      |
 
-> A função `match` é a implementação do **procedimento `CasaToken`** descrito no enunciado do trabalho.
+> A função `CasaToken` é a implementação do **procedimento `CasaToken`** descrito no enunciado do trabalho.
 
 ### 3.2 Funções de parse (não-terminais da gramática)
 
