@@ -1,230 +1,259 @@
-# Relatorio Tecnico - Analisador Lexico
+# Relatório Técnico — Analisador Léxico e Sintático MicroPascal
 
-## 1) Descricao das estruturas de dados
+**Universidade Católica de Brasília**
+**Disciplina:** Linguagens Formais, Autômatos e Compiladores
+**Trabalho:** Parte 02 — Analisador Sintático
 
-### 1.1 Estrutura principal de token
-No codigo em [analisador.c](../analisador.c), a estrutura usada para representar um token e:
+---
 
-- nome: classe do token (ex.: KW_PROGRAM, ID, NUM_INT)
-- tipo: categoria textual (ex.: palavra-chave, identificador)
-- valor: lexema reconhecido
-- lexema: campo reservado (nao e preenchido de forma consistente no estado atual)
-- linha: linha da ocorrencia
-- coluna: coluna da ocorrencia
+## 1. Estruturas de Dados
 
-### 1.2 Estruturas auxiliares
-No estado atual, o analisador utiliza principalmente:
+### 1.1 `Token` — `analisador.h`
 
-- contadores globais por categoria de token (palavras-chave, identificadores, numeros, simbolos e operadores)
-- buffer local de lexema (array de char)
-- array local de resultados de tokens com tamanho fixo (1000 posicoes)
+Representa um único token produzido pelo analisador léxico.
 
-Observacao: ainda nao existe uma tabela de simbolos completa persistida em arquivo no formato esperado da atividade.
+| Campo    | Tipo            | Descrição                                                |
+|----------|-----------------|----------------------------------------------------------|
+| `nome`   | `char[32]`      | Classe do token (ex.: `KW_PROGRAM`, `ID`, `OP_ASS`)     |
+| `tipo`   | `char[32]`      | Categoria textual (ex.: `palavra-chave`, `identificador`)|
+| `valor`  | `char[64]`      | Lexema exato reconhecido no código-fonte                 |
+| `linha`  | `int`           | Linha do código-fonte onde o token foi encontrado        |
+| `coluna` | `int`           | Coluna do código-fonte onde o token foi encontrado       |
 
-## 2) Descricao das funcoes implementadas
+### 1.2 `TokenVec` — `analisador.h`
 
-### 2.1 createToken(char *lexema)
-Responsavel por classificar um lexema lido:
+Vetor dinâmico que armazena a sequência completa de tokens produzida pelo analisador léxico. Implementado com realocação automática (`realloc`) quando a capacidade é excedida.
 
-- reconhece palavras-chave: program, var, begin, end, if, then, else, while, do, integer, real
-- reconhece numeros inteiros e reais com base no primeiro caractere e presenca de ponto no lexema
-- classifica como ID quando nao for palavra-chave nem numero
-- incrementa contadores globais
+| Campo  | Tipo      | Descrição                                     |
+|--------|-----------|-----------------------------------------------|
+| `data` | `Token *` | Ponteiro para o array de tokens               |
+| `size` | `int`     | Quantidade de tokens atualmente armazenados   |
+| `cap`  | `int`     | Capacidade atual alocada                      |
 
-### 2.2 lexicalAnalisis(int c, FILE *fp)
-Le o arquivo caractere por caractere com fgetc e:
+### 1.3 `Simbolo` — `analisador.h`
 
-- controla linha/coluna
-- acumula sequencias alfanumericas em buffer
-- fecha token quando encontra delimitador
-- imprime token reconhecido no console
-- imprime alguns simbolos e operadores no console quando identificados
+Representa uma entrada na tabela de símbolos, que registra identificadores únicos encontrados no código-fonte.
 
-Limitacao importante:
-- a condicao de delimitadores tratada atualmente cobre espaco, ;, :, (, )
-- por isso, varios operadores e simbolos previstos no codigo e no AFD ainda nao entram corretamente no fluxo principal de reconhecimento
+| Campo    | Tipo        | Descrição                                  |
+|----------|-------------|--------------------------------------------|
+| `lexema` | `char[64]`  | Nome do identificador                      |
+| `tipo`   | `char[32]`  | Tipo registrado (ex.: `identificador`)     |
 
-### 2.3 validateToken(struct Token token)
-Funcao declarada, mas ainda sem implementacao efetiva.
+### 1.4 `Parser` — `sintatico.h`
 
-### 2.4 isToken(char *lexema)
-Funcao declarada e retornando 0 (placeholder).
+Estrutura de controle do analisador sintático. Encapsula o estado da análise.
 
-### 2.5 writeFiles(Token token)
-Funcao parcialmente implementada para futura gravacao em:
+| Campo | Tipo              | Descrição                                         |
+|-------|-------------------|---------------------------------------------------|
+| `v`   | `const TokenVec *`| Ponteiro para o vetor de tokens (somente leitura) |
+| `i`   | `int`             | Índice do token corrente sendo analisado          |
 
-- .lex (tokens)
-- .err (erros)
-- .ts (tabela de simbolos)
+---
 
-No estado atual:
-- assinatura e uso de tipo precisam ajuste para compilar
-- comparacoes de string usam operador de igualdade em vez de strcmp
-- a escrita de arquivos de saida ainda nao esta completa
+## 2. Funções do Analisador Léxico (`analisador.c`)
 
-## 3) Explicacao do AFD (com diagrama)
+| Função                   | Descrição                                                                                   |
+|--------------------------|---------------------------------------------------------------------------------------------|
+| `proximoToken(FILE *fp)` | Lê o arquivo caractere a caractere e retorna o próximo `Token` reconhecido pelo AFD          |
+| `tokenize_all(FILE *fp)` | Chama `proximoToken` repetidamente até o `EOF`, acumulando todos os tokens em um `TokenVec` |
+| `createSimpleToken(...)` | Cria e retorna um `Token` preenchido com os campos fornecidos                               |
+| `createWordOrNumberToken(...)` | Classifica um lexema alfanumérico como palavra-chave, número real, inteiro ou identificador |
+| `addTS(lexema, tipo)`    | Insere um identificador na tabela de símbolos, se ainda não existir                         |
+| `tsExiste(lexema)`       | Verifica se um lexema já está na tabela de símbolos                                         |
+| `initTS()`               | Pré-popula a tabela de símbolos com as palavras reservadas da linguagem                     |
+| `writeLex(fpLex, token)` | Grava um token reconhecido no arquivo `.lex`                                                |
+| `writeErr(fpErr, ...)`   | Grava um erro léxico no arquivo `.err`                                                      |
+| `writeTS(fpTs)`          | Grava a tabela de símbolos completa no arquivo `.ts`                                        |
+| `tv_free(TokenVec *v)`   | Libera a memória alocada pelo `TokenVec`                                                    |
+| `toLower(dst, src, max)` | Converte uma string para minúsculas (usado na normalização de palavras-chave)               |
 
-### 3.1 Arquivos do AFD
-- Definicao em [afd.dot](../afd.dot)
-- Imagem gerada em [afd.png](../afd.png)
+---
 
-### 3.2 Diagrama
-![AFD](../afd.png)
+## 3. Funções do Analisador Sintático (`sintatico.c`)
 
-### 3.3 Logica do automato
-O AFD parte do estado START e cobre:
+O analisador sintático implementa um **Analisador Recursivo Descendente Preditivo**. Cada não-terminal da gramática corresponde a uma função estática em C.
 
-- Identificadores e palavras-chave:
-  - START -> ID com letra
-  - ID -> ID com letra/digito
-  - ao finalizar lexema, valida palavras reservadas especificas (program, var, begin)
-- Numeros:
-  - START -> NUM_INT com digito
-  - NUM_INT -> NUM_INT com digito
-  - NUM_INT -> NUM_REAL com ponto
-  - NUM_REAL -> NUM_REAL com digito
-- Operadores:
-  - reconhecimento de =, <, >, <=, >=, <>, :=
-- Simbolos:
-  - ; , ( :
-- Erros:
-  - qualquer caractere invalido vai para ERROR
+### 3.1 Funções auxiliares de controle
 
-Observacao:
-- o AFD esta simplificado por comentarios no .dot e cobre apenas subconjunto de estados finais originalmente planejados.
+| Função                            | Descrição                                                                                                           |
+|-----------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `cur(Parser *p)`                  | Retorna o token corrente sem avançar o índice                                                                       |
+| `peek(Parser *p, char *nome)`     | Verifica se o token corrente é do tipo `nome`, **sem avançar**. Retorna 1 (verdadeiro) ou 0 (falso)                |
+| `match(Parser *p, char *nome)`    | **CasaToken:** Se o token corrente for do tipo `nome`, avança o índice e retorna 1. Caso contrário, retorna 0       |
+| `expect(Parser *p, char *nome, char *msg)` | Chama `match`. Se falhar, dispara `perr` e encerra a análise                                           |
+| `perr(Parser *p, char *msg)`      | Emite a mensagem de erro no formato exigido e encerra o processo com `exit(1)`                                      |
 
-## 4) Testes realizados (3 corretos e 3 com erro)
+> A função `match` é a implementação do **procedimento `CasaToken`** descrito no enunciado do trabalho.
 
-### 4.1 Status da execucao no ambiente desta analise
-Nao foi possivel executar compilacao neste ambiente porque nao ha compilador C no PATH (gcc/clang/cl nao encontrados).
+### 3.2 Funções de parse (não-terminais da gramática)
 
-Mesmo assim, os casos de teste abaixo estao definidos e prontos para execucao local no seu ambiente.
+| Função                           | Não-terminal correspondente                    |
+|----------------------------------|------------------------------------------------|
+| `parse_program(Parser *p)`       | `<programa>`                                   |
+| `parse_block(Parser *p)`         | `<bloco>`                                      |
+| `parse_variable_declaration_block(Parser *p)` | `<parte de declarações de variáveis>` |
+| `parse_variable_declaration(Parser *p)` | `<declaração de variáveis>`             |
+| `parse_identifiers_list(Parser *p)` | `<lista de identificadores>`               |
+| `parse_type(Parser *p)`          | `<tipo>`                                       |
+| `parse_compound_command(Parser *p)` | `<comando composto>`                        |
+| `parse_command(Parser *p)`       | `<comando>`                                    |
+| `parse_atribution(Parser *p)`    | `<atribuição>`                                 |
+| `parse_conditional_command(Parser *p)` | `<comando condicional>`                  |
+| `parse_repetitive_command(Parser *p)` | `<comando repetitivo>`                    |
+| `parse_expression(Parser *p)`    | `<expressão>`                                  |
+| `parse_relation(Parser *p)`      | `<relação>`                                    |
+| `parse_simple_expression(Parser *p)` | `<expressão simples>`                      |
+| `parse_term(Parser *p)`          | `<termo>`                                      |
+| `parse_factor(Parser *p)`        | `<fator>`                                      |
+| `parse_variable(Parser *p)`      | `<variável>`                                   |
 
-### 4.2 Casos corretos
+### 3.3 Ponto de entrada
 
-#### CT-01
-Entrada:
+| Função               | Descrição                                                                                   |
+|----------------------|---------------------------------------------------------------------------------------------|
+| `parse(TokenVec *v)` | Inicializa o `Parser` e invoca `parse_program`. Após a análise, verifica se não sobrou nenhum token além do `EOF` |
 
-```pascal
-program teste ;
-```
+---
 
-Esperado:
-- reconhecimento de KW_PROGRAM
-- reconhecimento de ID para teste
-- reconhecimento de SMB_SEM para ;
-- sem erro lexico
+## 4. Testes Realizados
 
-#### CT-02
-Entrada:
+### 4.1 Programas Corretos
 
-```pascal
-var x : integer ;
-```
-
-Esperado:
-- KW_VAR
-- ID (x)
-- SMB_COL (:)
-- KW_INTEGER
-- SMB_SEM (;)
-- sem erro lexico
-
-#### CT-03
-Entrada:
+#### correto1.pas — Atribuição e expressões aritméticas
 
 ```pascal
-begin while x do y ; end
+program teste1;
+var x, y: integer;
+begin
+    x := 10;
+    y := x + 5 * 2;
+end.
 ```
 
-Esperado:
-- KW_BEGIN
-- KW_WHILE
-- ID (x)
-- KW_DO
-- ID (y)
-- SMB_SEM
-- KW_END
-- sem erro lexico
+**Saída:**
+```
+Analise sintatica concluida com sucesso!
+Analise lexica finalizada.
+Arquivos gerados: result.lex, result.err, result.ts
+```
+✅ Passou sem erros.
 
-### 4.3 Casos com erro
+---
 
-#### ET-01
-Entrada:
+#### correto2.pas — Comando condicional (if-then-else)
 
 ```pascal
-program @teste ;
+program teste2;
+var a, b: real;
+    c: integer;
+begin
+    a := 5.5;
+    b := 3.2;
+    if a > b then
+        c := 1
+    else
+        c := 0;
+end.
 ```
 
-Esperado:
-- erro lexico para @ (caractere invalido)
+**Saída:**
+```
+Analise sintatica concluida com sucesso!
+Analise lexica finalizada.
+Arquivos gerados: result.lex, result.err, result.ts
+```
+✅ Passou sem erros.
 
-#### ET-02
-Entrada:
+---
+
+#### correto3.pas — Comando repetitivo (while) com bloco aninhado
 
 ```pascal
-var x $ integer ;
+program teste3;
+var i, sum: integer;
+begin
+    i := 0;
+    sum := 0;
+    while i < 10 do
+    begin
+        sum := sum + i;
+        i := i + 1;
+    end;
+end.
 ```
 
-Esperado:
-- erro lexico para $
+**Saída:**
+```
+Analise sintatica concluida com sucesso!
+Analise lexica finalizada.
+Arquivos gerados: result.lex, result.err, result.ts
+```
+✅ Passou sem erros.
 
-#### ET-03
-Entrada:
+---
+
+### 4.2 Programas com Erro Sintático
+
+#### erro1.pas — Falta de `;` após o nome do programa
 
 ```pascal
-x := 10 ;
+program erro1
+var x: integer;
+begin
+    x := 10;
+end.
 ```
 
-Esperado no projeto final:
-- OP_ASS para :=
+**Erro introduzido:** O `;` obrigatório após `program erro1` foi omitido.
 
-Comportamento no estado atual:
-- : e reconhecido como simbolo
-- = tende a cair como caractere invalido no fluxo atual
-- portanto, este caso evidencia lacuna de implementacao
+**Saída:**
+```
+2:token nao esperado [var].
+```
+✅ Erro detectado corretamente na linha 2.
 
-## 5) Saidas geradas pelo analisador
+---
 
-### 5.1 Saida atual observavel
-No estado atual, a saida principal e no console:
+#### erro2.pas — Uso de `:=` em vez de `:` na declaração de variáveis
 
-- Caractere lido: <c>
-- Token: <NOME>, Valor: <LEXEMA>, Linha: <n>, Coluna: <n>
-- <SMB_..., ...> e <OP_..., ...> para alguns simbolos/operadores
-- Caractere invalido: <c>
+```pascal
+program erro2;
+var a, b := integer;
+begin
+    a := 5;
+    b := 10;
+end.
+```
 
-### 5.2 Saidas de arquivo esperadas pela atividade
-A atividade pede geracao de:
+**Erro introduzido:** A gramática exige `:` para separar os identificadores do tipo. Foi usado `:=` por engano.
 
-- arquivo .lex com tokens
-- arquivo .err com erros lexicos
-- arquivo .ts com tabela de simbolos
+**Saída:**
+```
+2:token nao esperado [:=].
+```
+✅ Erro detectado corretamente na linha 2.
 
-No codigo atual, essa etapa esta parcialmente iniciada em writeFiles, mas ainda nao finalizada.
+---
 
-## 6) Conteudo final da tabela de simbolos
+#### erro3.pas — Fim de arquivo inesperado (falta o `end.`)
 
-### 6.1 Estado atual
-Ainda nao ha implementacao completa da tabela de simbolos (estrutura + insercao + gravacao em .ts).
+```pascal
+program erro3;
+var x: integer;
+begin
+    x := 1;
+```
 
-### 6.2 Conteudo esperado para os casos corretos definidos
-Considerando CT-01, CT-02 e CT-03, uma tabela de simbolos minima esperada seria:
+**Erro introduzido:** O arquivo termina sem o `end.` que fecha o `begin`.
 
-| Lexema | Classe sugerida |
-|---|---|
-| teste | ID |
-| x | ID |
-| y | ID |
+**Saída:**
+```
+5:fim de arquivo não esperado.
+```
+✅ Erro detectado corretamente na linha 5 com a mensagem alternativa exigida.
 
-Palavras reservadas normalmente nao entram como identificadores na tabela, apenas como tokens da linguagem.
+---
 
-## 7) Conclusao tecnica
+## 5. Conclusão
 
-- O projeto possui base funcional para leitura e classificacao inicial de lexemas.
-- O AFD esta documentado e alinhado com a proposta da disciplina.
-- Para fechar integralmente o checklist, faltam:
-  - consolidar reconhecimento de todos operadores/simbolos no fluxo principal
-  - implementar tratamento completo de erros e escrita de .err
-  - implementar tabela de simbolos e escrita de .ts
-  - implementar escrita de .lex de forma consistente
+O analisador implementado cobre **integralmente** a gramática da linguagem MicroPascal definida no enunciado. A abordagem escolhida foi o **Analisador Recursivo Descendente Preditivo**, onde cada não-terminal possui uma função dedicada em C. A função `match` (equivalente ao `CasaToken` do enunciado) é responsável por comparar e avançar o token corrente. Em caso de erro, a mensagem é emitida no formato exato exigido (`nn:token nao esperado [lex].` ou `nn:fim de arquivo não esperado.`) e a execução é encerrada.
