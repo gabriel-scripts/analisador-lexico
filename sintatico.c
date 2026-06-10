@@ -29,7 +29,7 @@ static int peek(Parser *p, const char *nomeEsperado) {
 }
 
 // Verifica se o token atual é o esperado. Se for, avança e retorna 1. Senão, retorna 0.
-static int match(Parser *p, const char *nomeEsperado) {
+static int CasaToken(Parser *p, const char *nomeEsperado) {
     if (strcmp(cur(p).nome, nomeEsperado) == 0) {
         p->i++;
         return 1;
@@ -39,7 +39,7 @@ static int match(Parser *p, const char *nomeEsperado) {
 
 // Exige que o token atual seja o esperado. Se não for, dispara erro!
 static void expect(Parser *p, const char *nomeEsperado, const char *msgErro) {
-    if (!match(p, nomeEsperado)) {
+    if (!CasaToken(p, nomeEsperado)) {
         perr(p, msgErro);
     }
 }
@@ -112,7 +112,7 @@ static void parse_conditional_command(Parser *p) {
     parse_expression(p);
     expect(p, "KW_THEN", "Esperava 'then' após a expressão de um comando condicional");
     parse_command(p);
-    if (match(p, "KW_ELSE")) {
+    if (CasaToken(p, "KW_ELSE")) {
         parse_command(p);
     }
 }
@@ -148,9 +148,9 @@ static void parse_compound_command(Parser *p) {
 
 
 static void parse_type(Parser *p) {
-    if (match(p, "KW_INTEGER")) {
+    if (CasaToken(p, "KW_INTEGER")) {
         return;
-    } else if (match(p, "KW_REAL")) {
+    } else if (CasaToken(p, "KW_REAL")) {
         return;
     } else {
         perr(p, "Esperava 'integer' ou 'real' para tipo de variável");
@@ -159,7 +159,7 @@ static void parse_type(Parser *p) {
 
 static void parse_identifiers_list(Parser *p) {
     expect(p, "ID", "Esperava um identificador");
-    while (match(p, "SMB_COM")) {
+    while (CasaToken(p, "SMB_COM")) {
         expect(p, "ID", "Esperava um identificador após ','");
     }
 }
@@ -171,7 +171,7 @@ static void parse_variable_declaration(Parser *p) {
 }
 
 static void parse_variable_declaration_block(Parser *p) {
-    while(match(p, "KW_VAR")){
+    while(CasaToken(p, "KW_VAR")){
         do{
             parse_variable_declaration(p);
             expect(p, "SMB_SEM", "Esperava ';' no final da declaração de variáveis");
@@ -199,7 +199,7 @@ void parse(const TokenVec *v) {
     parse_program(&p);
     
     // Se o parse_program rodou e sobrou token (que nao seja EOF), tem algo errado
-    if (!match(&p, "EOF")) {
+    if (!CasaToken(&p, "EOF")) {
         perr(&p, "Simbolos extra encontrados apos o fim do programa");
     }
     
