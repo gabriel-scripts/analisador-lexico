@@ -494,7 +494,7 @@ int main(int argc, char *argv[]) {
     }
 
     // CHAMADA DO SINTÁTICO:
-    parse(&v);
+    parse(&v, fpErr);
 
     tv_free(&v);
 

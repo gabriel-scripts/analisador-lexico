@@ -3,13 +3,20 @@
 #include <string.h>
 #include "sintatico.h"
 
-// Imprime erro e encerra
+// Imprime erro no stderr e grava no arquivo result.err, depois encerra
 static void perr(Parser *p, const char *msg) {
     Token t = p->v->data[p->i < p->v->size ? p->i : p->v->size - 1];
+    char erroMsg[128];
+
     if (strcmp(t.nome, "EOF") == 0) {
-        fprintf(stderr, "%d:fim de arquivo não esperado.\n", t.linha);
+        snprintf(erroMsg, sizeof(erroMsg), "%d:fim de arquivo n\u00e3o esperado.\n", t.linha);
     } else {
-        fprintf(stderr, "%d:token nao esperado [%s].\n", t.linha, t.valor);
+        snprintf(erroMsg, sizeof(erroMsg), "%d:token nao esperado [%s].\n", t.linha, t.valor);
+    }
+
+    fprintf(stderr, "%s", erroMsg);
+    if (p->fpErr != NULL) {
+        fprintf(p->fpErr, "%s", erroMsg);
     }
     exit(1);
 }
@@ -193,8 +200,8 @@ static void parse_program(Parser *p) {
 }
 
 
-void parse(const TokenVec *v) {
-    Parser p = { v, 0 };
+void parse(const TokenVec *v, FILE *fpErr) {
+    Parser p = { v, 0, fpErr };
     
     parse_program(&p);
     
