@@ -1,57 +1,97 @@
-# Documentacao tecnica - como rodar o analisador lexico
+# Documentação Técnica - Como rodar o analisador
 
-## 1) Visao geral
-Este projeto contem um analisador lexico escrito em C no arquivo `analisador.c`.
+## 1) Visão Geral
+Este projeto contém um analisador léxico e sintático escrito em C. O ponto de entrada principal está no arquivo `analisador.c` e as regras de parse em `sintatico.c`.
 
 No estado atual, o programa:
-- Le um arquivo chamado `codigo.pas` no diretorio raiz do projeto.
-- Faz analise lexico-basica e imprime tokens no terminal.
-- Ainda possui partes em desenvolvimento (ex.: escrita de arquivos de saida).
+- Lê um arquivo chamado `codigo.pas` no diretório raiz do projeto.
+- Faz a análise léxica e sintática completa.
+- Imprime os tokens e a árvore de regras de produção no terminal.
+- Gera os relatórios de erros ou as saídas esperadas.
 
-## 2) Pre-requisitos
+## 2) Pré-requisitos
 
-### Windows
-- Compilador C (GCC via MinGW-w64, MSYS2 ou TDM-GCC).
-- PowerShell (ja disponivel no Windows).
+Para compilar o código, você precisará de um compilador C (como GCC ou Clang) instalado no seu sistema.
 
-Para validar se o GCC esta instalado:
+### 🐧 Linux
+O GCC normalmente já vem instalado nas principais distribuições, ou pode ser facilmente obtido.
+Para verificar ou instalar no Ubuntu/Debian:
+```bash
+gcc --version
+sudo apt update && sudo apt install build-essential
+```
 
-    gcc --version
+### 🍎 macOS
+O Clang é o compilador padrão fornecido pela Apple através do Xcode Command Line Tools.
+Para verificar ou instalar via Terminal:
+```bash
+gcc --version
+xcode-select --install
+```
 
-Se o comando nao existir, instale um pacote de GCC (ex.: MSYS2/MinGW) e reinicie o terminal.
+### 🪟 Windows
+Recomenda-se instalar o GCC via MSYS2, MinGW-w64 ou TDM-GCC.
+Para verificar via PowerShell ou CMD:
+```powershell
+gcc --version
+```
+*(Caso não possua, instale um pacote MSYS2/MinGW e adicione o caminho do compilador nas variáveis de ambiente do Windows).*
 
-### Linux/macOS
-- GCC ou Clang instalado.
-
-## 3) Estrutura esperada
+## 3) Estrutura Esperada
 O programa abre o arquivo de entrada com nome fixo `codigo.pas`:
 
-    fp = fopen("codigo.pas", "r");
+```c
+fp = fopen("codigo.pas", "r");
+```
 
-Entao o arquivo deve existir na raiz do projeto, ao lado de `analisador.c`.
+Então o arquivo a ser testado deve existir na raiz do projeto, ao lado dos arquivos de código fonte. No repositório existem exemplos de testes na pasta `micropascal/`.
 
-No repositiorio existe um exemplo em:
-- `micropascal/micropascal.pas`
+## 4) Preparar Arquivo de Entrada
 
-## 4) Preparar arquivo de entrada (Windows PowerShell)
-A partir da raiz do projeto:
+A partir da raiz do projeto, você precisa copiar um dos testes para o arquivo `codigo.pas`.
 
-    Copy-Item .\micropascal\micropascal.pas .\codigo.pas
+**No Linux ou macOS (Terminal):**
+```bash
+cp micropascal/correto1.pas codigo.pas
+```
+
+**No Windows (PowerShell):**
+```powershell
+Copy-Item .\micropascal\correto1.pas .\codigo.pas
+```
 
 ## 5) Compilar
-Na raiz do projeto:
 
-    gcc analisador.c -o analisador.exe
+Na raiz do projeto, utilize o comando apropriado para compilar os arquivos C juntos:
 
-Se preferir gerar com simbolos de debug:
+**No Linux ou macOS:**
+```bash
+gcc analisador.c sintatico.c -o analisador
+```
 
-    gcc -g -Wall -Wextra analisador.c -o analisador.exe
+**No Windows:**
+```powershell
+gcc analisador.c sintatico.c -o analisador.exe
+```
+
+*(Opcional: Se preferir gerar com símbolos de debug e avisos ativados, adicione `-g -Wall -Wextra` após o `gcc`).*
 
 ## 6) Executar
-Na raiz do projeto:
 
-    .\analisador.exe
+Execute o binário gerado na raiz do projeto.
 
-Saida esperada:
-- Impressao de caracteres lidos.
-- Impressao de tokens identificados no console.
+**No Linux ou macOS:**
+```bash
+./analisador
+```
+
+**No Windows (PowerShell/CMD):**
+```powershell
+.\analisador.exe
+```
+
+### Saída Esperada:
+- Impressão dos caracteres lidos.
+- Impressão dos tokens identificados no console.
+- Impressão sequencial de todas as regras de produção do analisador sintático (`<regra> ::= ...`).
+- Conclusão com sucesso ou a impressão exata do erro, caso o arquivo teste seja inválido.
