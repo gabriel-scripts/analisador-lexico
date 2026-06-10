@@ -450,15 +450,21 @@ TokenVec tokenize_all(FILE *fp) {
 
 
 
-int main(void) {
-    FILE *fp;
 
-    fp = fopen("micropascal/micropascal.pas", "r");
-    if (fp == NULL) {
-        fp = fopen("codigo.pas", "r");
+int main(int argc, char *argv[]) {
+    FILE *fp;
+    const char *arquivo;
+
+    if (argc >= 2) {
+        arquivo = argv[1];
+        fp = fopen(arquivo, "r");
+    } else {
+        arquivo = "codigo.pas";
+        fp = fopen(arquivo, "r");
     }
+
     if (fp == NULL) {
-        perror("Erro ao abrir arquivo");
+        fprintf(stderr, "Erro ao abrir arquivo '%s'\n", arquivo);
         return 1;
     }
 
