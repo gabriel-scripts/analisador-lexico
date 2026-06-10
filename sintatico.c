@@ -3,11 +3,6 @@
 #include <string.h>
 #include "sintatico.h"
 
-// As mensagens devem ter os seguintes formatos (onde nn é o número da linha onde o erro foi detectado e
-// lex é o lexema encontrado):
-// • nn:token nao esperado [lex].
-// • nn:fim de arquivo não esperado.
-
 // Imprime erro e encerra
 static void perr(Parser *p, const char *msg) {
     Token t = p->v->data[p->i < p->v->size ? p->i : p->v->size - 1];
@@ -52,27 +47,17 @@ static void expect(Parser *p, const char *nomeEsperado, const char *msgErro) {
 static void parse_expression(Parser *p);
 static void parse_command(Parser *p);
 static void parse_compound_command(Parser *p);
+static void parse_variable(Parser *p);
 
-// COMANDOS
-// <comando composto> ::= begin <comando> ; { <comando> ; } end
-// <comando> ::= <atribuição> | <comando composto> | <comando condicional> | <comando repetitivo>
-// <atribuição> ::= <variável> := <expressão>
-// <comando condicional> ::= if <expressão> then <comando> [ else <comando> ]
-// <comando repetitivo> ::= while <expressão> do <comando>
-
-//
-// <expressão> ::= <expressão simples> [ <relação> <expressão simples> ]
-// <relação> ::= = | <> | < | <= | >= | >
-// <expressão simples> ::= [ + | - ] <termo> { ( + | - ) <termo> }
-// <termo> ::= <fator> { ( * | / ) <fator> }
-// <fator> ::= <variável> | <número> | ( <expressão> )
-// <variável> ::= <identificador>
-
+static void parse_variable(Parser *p) {
+    printf("<variável> ::= <identificador>\n");
+    expect(p, "ID", "Esperava um identificador");
+}
 
 static void parse_factor(Parser *p){
     printf("<fator> ::= <variável> | <número> | ( <expressão> )\n");
     if(peek(p, "ID")) {
-        expect(p, "ID", "Esperava um identificador");
+        parse_variable(p);
     } else if (peek(p, "NUM_INT") || peek(p, "NUM_REAL")) {
         p->i++;
     } else if (peek(p, "SMB_OP_PAR")) {
@@ -142,7 +127,7 @@ static void parse_conditional_command(Parser *p) {
 
 static void parse_atribution(Parser *p) {
     printf("<atribuição> ::= <variável> := <expressão>\n");
-    expect(p, "ID", "Esperava um identificador para iniciar uma atribuição");
+    parse_variable(p);
     expect(p, "OP_ASS", "Esperava ':=' após o identificador");
     parse_expression(p);
 }
