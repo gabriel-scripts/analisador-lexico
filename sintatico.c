@@ -3,6 +3,30 @@
 #include <string.h>
 #include "sintatico.h"
 
+static void perr(Parser *p, const char *msg);
+static Token cur(Parser *p);
+static int peek(Parser *p, const char *nomeEsperado);
+static int match(Parser *p, const char *nomeEsperado);
+static void expect(Parser *p, const char *nomeEsperado, const char *msgErro);
+static int relation_helper(Parser *p);
+
+static void parse_factor(Parser *p);
+static void parse_term(Parser *p);
+static void parse_relation(Parser *p);
+static void parse_simple_expression(Parser *p);
+static void parse_expression(Parser *p);
+static void parse_repetitive_command(Parser *p);
+static void parse_conditional_command(Parser *p);
+static void parse_atribution(Parser *p);
+static void parse_command(Parser *p);
+static void parse_compound_command(Parser *p);
+static void parse_type(Parser *p);
+static void parse_identifiers_list(Parser *p);
+static void parse_variable_declaration(Parser *p);
+static void parse_variable_declaration_block(Parser *p);
+static void parse_block(Parser *p);
+static void parse_program(Parser *p);
+
 // As mensagens devem ter os seguintes formatos (onde nn é o número da linha onde o erro foi detectado e
 // lex é o lexema encontrado):
 // • nn:token nao esperado [lex].
@@ -11,8 +35,8 @@
 // Imprime erro e encerra
 static void perr(Parser *p, const char *msg) {
     Token t = p->v->data[p->i < p->v->size ? p->i : p->v->size - 1];
-    fprintf(stderr, "%d:%d: [%s] \n", 
-            t.linha, t.coluna, t.tipo);
+    fprintf(stderr, "%d:%d: [%s] %s\n", 
+            t.linha, t.coluna, t.tipo, msg);
     exit(1);
 }
 
@@ -62,12 +86,12 @@ static void expect(Parser *p, const char *nomeEsperado, const char *msgErro) {
 
 
 static void parse_factor(Parser *p){
-    if(peek(p, "ID")) {
-        expect(p, "ID", "Esperava um identificador");
+    if (match(p, "ID")) {
+        // match já avança o token se for ID
+        return;
     } else if (peek(p, "NUM_INT") || peek(p, "NUM_REAL")) {
         p->i++;
-    } else if (peek(p, "SMB_OP_PAR")) {
-        expect(p, "SMB_OP_PAR", "Esperava '(' para iniciar uma expressão entre parênteses");
+    } else if (match(p, "SMB_OP_PAR")) {
         parse_expression(p);
         expect(p, "SMB_CL_PAR", "Esperava ')' para fechar a expressão entre parênteses");
     } else {
@@ -84,7 +108,7 @@ static void parse_term(Parser *p){
 }
 
 static void parse_relation(Parser *p) {
-    if (peek(p, "OP_EQ") || peek(p, "OP_NEQ") || peek(p, "OP_LT") || peek(p, "OP_LTE") || peek(p, "OP_GT") || peek(p, "OP_GTE")) {
+    if (relation_helper(p)) {
         p->i++;
     } else {
         perr(p, "Esperava um operador relacional (=, <>, <, <=, > ou >=)");
@@ -92,12 +116,14 @@ static void parse_relation(Parser *p) {
 }
 
 static void parse_simple_expression(Parser *p) {
-    do{
-        if (peek(p, "OP_SUM") || peek(p, "OP_SUB")) {
-            p->i++;
-        }
+    if (peek(p, "OP_SUM") || peek(p, "OP_SUB")) {
+        p->i++;
+    }
+    parse_term(p);
+    while (peek(p, "OP_SUM") || peek(p, "OP_SUB")) {
+        p->i++;
         parse_term(p);
-    } while (peek(p, "OP_SUM") || peek(p, "OP_SUB"));
+    }
 }
 
 static void parse_expression(Parser *p) {
@@ -145,16 +171,18 @@ static void parse_command(Parser *p) {
 
 static void parse_compound_command(Parser *p) {
     expect(p, "KW_BEGIN", "Esperava 'begin' para iniciar um comando composto");
-    do
-    {
+    
+    parse_command(p);
+    expect(p, "SMB_SEM", "Esperava ';' para separar comandos dentro de um comando composto");
+    
+    // Enquanto não for o 'end', continua processando comandos seguidos de ';'
+    while (!peek(p, "KW_END")) {
         parse_command(p);
         expect(p, "SMB_SEM", "Esperava ';' para separar comandos dentro de um comando composto");
-    } while (!match(p, "SMB_COM"));
+    }
     
-    parse_compound_command(p);
     expect(p, "KW_END", "Esperava 'end' para finalizar um comando composto");
 }
-
 
 static void parse_type(Parser *p) {
     if (match(p, "KW_INTEGER")) {
@@ -173,7 +201,6 @@ static void parse_identifiers_list(Parser *p) {
     }
 }
 
-
 static void parse_variable_declaration(Parser *p) {
     parse_identifiers_list(p);
     expect(p, "OP_ASS", "Esperava ':=' após a lista de identificadores");
@@ -185,15 +212,13 @@ static void parse_variable_declaration_block(Parser *p) {
         do{
             parse_variable_declaration(p);
             expect(p, "SMB_SEM", "Esperava ';' no final da declaração de variáveis");
-        }while(peek(p, "ID")); // Verifica se o próximo token é um identificador, se for, tem mais declaração de variável. Se não for, acabou o bloco de declaração de variáveis
+        } while(peek(p, "ID")); 
     }
 }
 
 static void parse_block(Parser *p) {
-
     parse_variable_declaration_block(p);
     parse_compound_command(p);
-
 }
 
 static void parse_program(Parser *p) {
@@ -204,13 +229,11 @@ static void parse_program(Parser *p) {
     expect(p, "SMB_DOT", "Esperava '.' no final do arquivo");
 }
 
-
 void parse(const TokenVec *v) {
     Parser p = { v, 0 };
     
     parse_program(&p);
     
-    // Se o parse_program rodou e sobrou token (que nao seja EOF), tem algo errado
     if (!match(&p, "EOF")) {
         perr(&p, "Simbolos extra encontrados apos o fim do programa");
     }
@@ -218,11 +241,9 @@ void parse(const TokenVec *v) {
     printf("Analise sintatica concluida com sucesso!\n");
 }
 
-
-static Parser* relation_helper(Parser *p) {
+static int relation_helper(Parser *p) {
     if (peek(p, "OP_EQ") || peek(p, "OP_NEQ") || peek(p, "OP_LT") || peek(p, "OP_LTE") || peek(p, "OP_GT") || peek(p, "OP_GTE")) {
         return 1;
-    } else {
-        return 0;
     }
+    return 0;
 }
