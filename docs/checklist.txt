@@ -79,3 +79,26 @@ Minha checklist:
     [ ] Saídas geradas pelo analisador.
 
     [ ] Conteúdo final da tabela de símbolos.
+
+7. Analisador Sintático (Implementado)
+
+    [X] <programa>
+    [X] <bloco>
+    [X] <parte de declarações de variáveis>
+    [X] <declaração de variáveis>
+    [X] <lista de identificadores>
+    [X] <tipo>
+    [ ] <comando composto> (Nota: `parse_compound_command` está parcialmente implementado, mas precisa de revisão na condição do loop e remoção da recursão indevida)
+
+8. Próximos Passos - Analisador Sintático (Concluídos)
+
+    [X] Implementar `<comando>` (roteamento feito usando `peek()`)
+    [X] Implementar `<atribuição>`
+    [X] Implementar `<comando condicional>`
+    [X] Implementar `<comando repetitivo>`
+    [X] Criar e implementar função para `<expressão>`
+    [X] Criar e implementar função para `<relação>`
+    [X] Criar e implementar função para `<expressão simples>`
+    [X] Criar e implementar função para `<termo>`
+    [X] Criar e implementar função para `<fator>`
+    [X] Criar e implementar função para `<variável>` (Embutida em fator/atribuição)
